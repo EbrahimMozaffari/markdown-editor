@@ -4,10 +4,12 @@
       <v-container>
         <v-row>
           <v-col>
-            <v-btn @click="showModal = true">Insert Media</v-btn>
+            <v-btn variant="text" @click="openModalHanler('image')">Image</v-btn>
+            <v-btn variant="text" @click="openModalHanler('video')">Video</v-btn>
             <v-dialog v-model="showModal" max-width="500px">
-              <media-modal @insert="insertMedia"></media-modal>
+              <media-modal @insert="insertMedia" :dataType="dataType"></media-modal>
             </v-dialog>
+            <hr class="my-3 grey" >
             <v-textarea
               label="Markdown Editor"
               v-model="markdownContent"
@@ -23,16 +25,13 @@
   </v-app>
 </template>
 
-<script>
+<script setup>
 import { ref, computed } from 'vue';
 import MediaModal from './components/MediaModal.vue';
 
-export default {
-  components: {
-    MediaModal
-  },
-  setup() {
+
     const showModal = ref(false);
+    const dataType = ref('');
     const markdownContent = ref(`
 # Markdown Editor
 
@@ -49,7 +48,10 @@ This is a **markdown editor** with support for inserting media.
 ![Video](https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4)
 ![File](https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf)
 `);
-
+    const openModalHanler = (type)=>{
+      showModal.value = true;
+      dataType.value = type
+    }
     const insertMedia = (media) => {
       markdownContent.value += `![${media.type}](${media.url})\n`;
       showModal.value = false;
@@ -69,14 +71,7 @@ This is a **markdown editor** with support for inserting media.
 
     const renderedMarkdown = computed(() => parseMarkdown(markdownContent.value));
 
-    return {
-      showModal,
-      markdownContent,
-      renderedMarkdown,
-      insertMedia
-    };
-  }
-};
+
 </script>
 
 <style>
