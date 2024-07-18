@@ -1,69 +1,53 @@
 <template>
-    <v-card>
-      <v-card-title>Select Media</v-card-title>
-      <v-card-text>
-        <v-form @submit.prevent="handleSubmit">
+    <v-card min-height="450px">
+      <v-tabs v-model="tab" align-tabs="center" color="deep-purple-accent-4">
+        <v-tab :value="1">Select Media</v-tab>
+        <v-tab :value="2">Upload</v-tab>
+      </v-tabs>
+      <v-tabs-window v-model="tab">
+        <v-tabs-window-item :value="1">
+          <v-card-text>
+          <v-card-title>Select {{dataType}}</v-card-title>
           <v-select
-            v-model="selectedType"
-            :items="mediaTypes"
-            label="Media Type"
-            outlined
-          ></v-select>
-          <v-file-input
-            v-model="selectedFile"
-            label="Upload File"
-            accept="image/*,video/*"
-            outlined
-          ></v-file-input>
-          <v-btn type="submit" color="primary">Insert</v-btn>
-        </v-form>
-        <v-divider></v-divider>
-        <v-select
-        class="my-3"
-        v-model="favorites"
-        :items="mediaListType[dataType]"
-        :label='`Select ${dataType}`'
-        multiple
-        persistent-hint
-        
-      >
-      <template v-slot:prepend-item>
-        <v-list-item
-          title="Select All"
-          @click="toggle"
-        >
-          <template v-slot:prepend>
-            <v-checkbox-btn
-              :color="likesSomeFruit ? 'indigo-darken-4' : undefined"
-              :indeterminate="likesSomeFruit && !likesAllFruit"
-              :model-value="likesAllFruit"
-            ></v-checkbox-btn>
-          </template>
-        </v-list-item>
-  
-        <v-divider class="mt-2"></v-divider>
-      </template>
-  
-      <template v-slot:append-item>
-        <v-divider class="mb-2"></v-divider>
-  
-        <v-list-item
-          :subtitle="subtitle"
-          :title="title"
-          disabled
-        >
-          <template v-slot:prepend>
-            <v-avatar color="primary" icon="mdi-food-apple"></v-avatar>
-          </template>
-        </v-list-item>
-      </template>
-    </v-select>
-        <v-divider></v-divider>
-        <v-list>
+                class="my-3"
+                v-model="selectedData"
+                :items="mediaListType[dataType]"
+                :label='`Select ${dataType}`'
+                item-title="name"
+                multiple
+                persistent-hint
+                return-object
+              
+              >
+              
+
+            </v-select>
+            <v-btn color="primary"  class="w-100" @click="insertData">Insert</v-btn>
+          </v-card-text>
+        </v-tabs-window-item>
+        <v-tabs-window-item :value="2">
+          <v-card-text>
+            <v-card-title>Upload {{dataType}}</v-card-title>
+            <v-form @submit.prevent="handleSubmit">
+              <v-file-input
+                v-model="selectedFile"
+                label="Upload File"
+                :accept="acceptData"
+                multiple="true"
+                outlined
+              ></v-file-input>
+              <v-btn type="submit" color="primary" class="w-100">Upload</v-btn>
+            </v-form>
+          </v-card-text>
+        </v-tabs-window-item>
+      </v-tabs-window>
+      <v-card-text>
+
+        <!-- <v-list>
           <v-list-item v-for="item in mediaListType[dataType]" :key="item.url" @click="selectExistingMedia(item)">
             <v-list-item-content>{{ item.name }}</v-list-item-content>
           </v-list-item>
-        </v-list>
+        </v-list> -->
       </v-card-text>
     </v-card>
   </template>
@@ -71,7 +55,7 @@
   <script setup>
   import { computed, reactive, ref } from 'vue';
   
-  defineEmits(['insert'])
+  const emits = defineEmits(['insert'])
   const props = defineProps({dataType:String})
     // emits: ['insert'],
     // props:{
@@ -80,18 +64,19 @@
 
       const selectedType = ref('');
       const selectedFile = ref(null);
-      const favorites = ref([]);
+      const tab = ref(1);
+      const selectedData = ref([]);
       const mediaTypes = ['Image', 'Video'];
   
       const mediaListType = reactive(
         { 
-          image: [
+          Image: [
             { name: 'Sample Image1', url: 'https://via.placeholder.com/150'},
             { name: 'Sample Image2', url: 'https://via.placeholder.com/150'},
             { name: 'Sample Image3', url: 'https://via.placeholder.com/150'},
             { name: 'Sample Image4', url: 'https://via.placeholder.com/150'}
           ],
-          video: [
+          Video: [
             { name: 'Sample Video1', url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4' },
             { name: 'Sample Video2', url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4' },
             { name: 'Sample Video3', url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4' },
@@ -103,40 +88,41 @@
       const handleSubmit = async () => {
         if (selectedFile.value) {
           const media = await uploadFile(selectedFile.value);
-          emit('insert', media);
+          emits('insert', media);
         }
       };
   
       const uploadFile = (file) => {
+        console.log(file);
+        let newfiles = [];
+        file.forEach(item => {
+          newfiles.push({ name: item.name, url: URL.createObjectURL(item) })
+        });
+        console.log(newfiles);
         return new Promise((resolve) => {
           setTimeout(() => {
-            resolve({ name: file.name, url: URL.createObjectURL(file), type: selectedType.value });
+            
+
+            resolve(newfiles);
           }, 1000);
         });
       };
-  
-      const selectExistingMedia = (item) => {
-        emit('insert', item);
+      const insertData = () => {
+        console.log(selectedData.value);
+        emits('insert', selectedData.value);
       };
+      // const acceptData = computed(()=>{
+      //  return dataType.value == 'Image' ? "image/*" : "video/*";
+      // })
+      const acceptData = () => {
+        return dataType.value == 'Image' ? "image/*" : "video/*";
+      };
+      // const selectExistingMedia = (item) => {
+      //   emits('insert', item);
+      // };
       
-      const likesAllFruit  = computed(()=>{
-        return favorites.value.length === mediaListType.image.length;
-      })
-      const likesSomeFruit   = computed(()=>{
-        return favorites.value.length > 0 && !likesAllFruit.value;
-      })
-      const title    = computed(()=>{
-        return likesAllFruit.value ? 'All' : likesSomeFruit.value ? 'Some' : 'None';
-      })
-      const subtitle    = computed(()=>{
-        return `${title.value} of ${mediaListType.image.length} images liked`
-      })
-      const toggle = ()=>{
-        if(favorites.value.length === mediaListType[dataType].length){
-          favorites.value = [];
-          }else{
-          favorites.value = mediaListType[dataType]
-          }
-      }
+      // const insert = ()=>{
+      //   emits('insert', selectedData.value);
+      // }
   </script>
   
