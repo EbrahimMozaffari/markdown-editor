@@ -11,15 +11,19 @@
             </v-dialog>
             
             <v-row class="mt-3 border-t">
-              <v-col class="v-col-6 bg-grey-lighten-2">
+              <v-col class="v-col-6 bg-grey-lighten-3">
                 <v-textarea
+                bg-color="white"
+                color="black"
                 label="Markdown Editor"
+                variant="outlined"
                 v-model="markdownContent"
                 rows="20"
                 outlined
               ></v-textarea>
+              <p class="text-subtitle-1 text-medium-emphasis">**Bold** *italic* _underline_ #H1 ##H2 ### H3</p>
               </v-col>
-              <v-col class="v-col-6 bg-grey-lighten-2 border-s" >
+              <v-col class="v-col-6 bg-grey-lighten-3 border-s" >
                 <div v-html="renderedMarkdown"></div>
               </v-col>
             </v-row>
@@ -58,10 +62,8 @@ This is a **markdown editor** with support for inserting media.
       dataType.value = type
     }
     const insertMedia = (media) => {
-      console.log(media);
       media.forEach(item => {
         markdownContent.value += `![${dataType.value}](${item.url})\n`;
-        //console.log(item.name);
       });
 
       // markdownContent.value += `![${media.type}](${media.url})\n`;
@@ -72,9 +74,12 @@ This is a **markdown editor** with support for inserting media.
       let html = content
         .replace(/!\[Image]\((.*?)\)/g, '<img class="customImages" src="$1" alt="Image">')
         .replace(/!\[Video]\((.*?)\)/g, '<video controls><source src="$1" type="video/mp4"></video>')
+        .replace(/(^|\s)### (.*?)($|\s\s)/g, '$1<h3>$2</h3>$3')
         .replace(/(^|\s)## (.*?)($|\s\s)/g, '$1<h2>$2</h2>$3')
         .replace(/(^|\s)# (.*?)($|\s\s)/g, '$1<h1>$2</h1>$3')
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<i>$1</i>')
+        .replace(/\_(.*?)\_/g, '<u>$1</u>')
         .replace(/(\r\n|\r|\n)/g, '<br>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>');
       return html;

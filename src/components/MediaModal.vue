@@ -19,8 +19,6 @@
                 return-object
               
               >
-              
-
             </v-select>
             <v-btn color="primary"  class="w-100" @click="insertData">Insert</v-btn>
           </v-card-text>
@@ -31,7 +29,7 @@
             <v-form @submit.prevent="handleSubmit">
               <v-file-input
                 v-model="selectedFile"
-                label="Upload File"
+                :label="`Upload ${dataType}`"
                 :accept="acceptData"
                 multiple="true"
                 outlined
@@ -42,12 +40,6 @@
         </v-tabs-window-item>
       </v-tabs-window>
       <v-card-text>
-
-        <!-- <v-list>
-          <v-list-item v-for="item in mediaListType[dataType]" :key="item.url" @click="selectExistingMedia(item)">
-            <v-list-item-content>{{ item.name }}</v-list-item-content>
-          </v-list-item>
-        </v-list> -->
       </v-card-text>
     </v-card>
   </template>
@@ -55,13 +47,8 @@
   <script setup>
   import { computed, reactive, ref } from 'vue';
   
-  const emits = defineEmits(['insert'])
-  const props = defineProps({dataType:String})
-    // emits: ['insert'],
-    // props:{
-    //   dataType:String
-    // },
-
+      const emits = defineEmits(['insert'])
+      const props = defineProps({dataType:String})
       const selectedType = ref('');
       const selectedFile = ref(null);
       const tab = ref(1);
@@ -93,7 +80,6 @@
       };
   
       const uploadFile = (file) => {
-        console.log(file);
         let newfiles = [];
         file.forEach(item => {
           newfiles.push({ name: item.name, url: URL.createObjectURL(item) })
@@ -101,8 +87,6 @@
         console.log(newfiles);
         return new Promise((resolve) => {
           setTimeout(() => {
-            
-
             resolve(newfiles);
           }, 1000);
         });
@@ -111,18 +95,8 @@
         console.log(selectedData.value);
         emits('insert', selectedData.value);
       };
-      // const acceptData = computed(()=>{
-      //  return dataType.value == 'Image' ? "image/*" : "video/*";
-      // })
       const acceptData = () => {
         return dataType.value == 'Image' ? "image/*" : "video/*";
       };
-      // const selectExistingMedia = (item) => {
-      //   emits('insert', item);
-      // };
-      
-      // const insert = ()=>{
-      //   emits('insert', selectedData.value);
-      // }
   </script>
   
